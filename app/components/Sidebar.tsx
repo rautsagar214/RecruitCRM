@@ -1,5 +1,5 @@
 // components/Sidebar.tsx
-import { useState } from 'react';
+
 import Link from 'next/link';
 import { Menu, X, LayoutDashboard, Users, FileText, Calendar, BarChart2, Settings, HelpCircle } from 'lucide-react';
 
