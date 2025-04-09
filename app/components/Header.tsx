@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className="bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6 sticky top-0 z-20 shadow-sm">
       {/* Left section - Page title */}
       <div className="flex-1 flex items-center">
-        <h2 className="text-lg font-semibold text-gray-800 hidden md:block">Dashboard</h2>
+        <h2 className="text-lg font-semibold text-[#5A4FFF] hidden md:block">Recruitment Dashboard</h2>
         
         {/* Search bar */}
         <div className={`ml-4 relative ${showSearchInput ? 'flex-1 md:max-w-md' : 'w-auto'}`}>

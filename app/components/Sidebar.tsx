@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ appName, isOpen, toggleSidebar }) => 
   const mainNavItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Applicants', href: '/applicants', icon: <Users size={20} /> },
-    { name: 'Job Listings', href: '/jobs', icon: <FileText size={20} /> },
+    { name: 'Job Listings', href: '/jobListing', icon: <FileText size={20} /> },
     { name: 'Calendar', href: '/calendar', icon: <Calendar size={20} /> },
     { name: 'Analytics', href: '/analytics', icon: <BarChart2 size={20} /> },
   ];
