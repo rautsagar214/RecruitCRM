@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ appName, isOpen, toggleSidebar }) => 
       {/* Overlay when sidebar is open on mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-20 lg:hidden"
+          className="fixed inset-0 bg-white bg-opacity-30 z-20 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
