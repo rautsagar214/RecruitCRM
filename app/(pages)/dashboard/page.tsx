@@ -192,7 +192,7 @@ const JobListingsDashboard: React.FC = () => {
       {filteredJobs.length === 0 && (
         <div className="text-center py-10">
           <p className="text-gray-500">
-            No job listings found matching "{searchQuery}"
+              No job listings found matching &quot;{searchQuery}&quot;
           </p>
         </div>
       )}
