@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import Sidebar from "./components/sidebar"; // Adjust path if needed
+import Sidebar from "./components/Sidebar"; // Adjust path if needed
 import Header from "./components/Header"; // Adjust path if needed
 import "./globals.css";
 
