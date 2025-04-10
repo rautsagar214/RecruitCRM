@@ -1,285 +1,330 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Search, ArrowRight, Plus, X } from "lucide-react";
+// pages/index.tsx
+import React, { use } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  Chart as ChartJS, 
+  ArcElement, 
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import { FaSearch, FaUser, FaCalendarAlt, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
 
-interface JobListing {
-  id: string;
+ChartJS.register(
+  ArcElement, 
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+interface Job {
+  id: number;
   title: string;
-  department: string;
-  hiringManager: string;
-  postedDate: string;
+  recruiter: string;
+  location: string;
+  date: string;
+  category: string;
   applicants: number;
+  status: string;
+  description?: string;
+  requirements?: string[];
 }
 
-const JobListingsDashboard: React.FC = () => {
-  const [jobListings, setJobListings] = useState<JobListing[]>([]);
-  const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredJobs, setFilteredJobs] = useState<JobListing[]>([]);
-  const [newJob, setNewJob] = useState({
-    title: "",
-    department: "",
-    hiringManager: "",
-  });
 
-  // Load job listings from localStorage on component mount
-  useEffect(() => {
-    const savedJobs = localStorage.getItem("jobListings");
-    if (savedJobs) {
-      const parsedJobs = JSON.parse(savedJobs);
-      setJobListings(parsedJobs);
-      setFilteredJobs(parsedJobs);
-    } else {
-      // Initialize with default data if no saved jobs
-      const defaultJobs: JobListing[] = [
-        {
-          id: "1",
-          title: "Frontend Developer",
-          department: "Engineering",
-          hiringManager: "Sarah Johnson",
-          postedDate: "Mar 20, 2025",
-          applicants: 3,
-        },
-        {
-          id: "2",
-          title: "UX Designer",
-          department: "Design",
-          hiringManager: "Alex Chen",
-          postedDate: "Mar 25, 2025",
-          applicants: 2,
-        },
-        {
-          id: "3",
-          title: "Product Manager",
-          department: "Product",
-          hiringManager: "Linda Martinez",
-          postedDate: "Mar 28, 2025",
-          applicants: 2,
-        },
-      ];
-      setJobListings(defaultJobs);
-      setFilteredJobs(defaultJobs);
-      localStorage.setItem("jobListings", JSON.stringify(defaultJobs));
-    }
-  }, []);
+const HomePage = () => {
 
-  // Filter jobs based on search query
-  useEffect(() => {
-    const filtered = jobListings.filter(
-      (job) =>
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.hiringManager.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredJobs(filtered);
-  }, [searchQuery, jobListings]);
+   const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading,setIsLoading] = React.useState(true);
+  
 
-  const handleAddJobClick = () => {
-    setIsAddJobModalOpen(true);
+  // Data for applicants by stage donut chart
+  const applicantStageData = {
+    labels: ['Applied', 'Phone Screen', 'Interview', 'Offer', 'Hired'],
+    datasets: [
+      {
+        data: [3, 1, 1, 1, 1],
+        backgroundColor: [
+          '#60a5fa', // Applied - blue
+          '#a855f7', // Phone Screen - purple
+          '#eab308', // Interview - yellow
+          '#5eead4', // Offer - teal
+          '#4ade80', // Hired - green
+        ],
+        borderWidth: 0,
+        hoverOffset: 4,
+      },
+    ],
   };
 
-  const handleCloseModal = () => {
-    setIsAddJobModalOpen(false);
-    setNewJob({
-      title: "",
-      department: "",
-      hiringManager: "",
-    });
-  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewJob((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newJob.title || !newJob.department || !newJob.hiringManager) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
-    const today = new Date();
-    const formattedDate = `Mar ${today.getDate()}, ${today.getFullYear()}`;
-
-    const newJobListing: JobListing = {
-      id: `${Date.now()}`,
-      title: newJob.title,
-      department: newJob.department,
-      hiringManager: newJob.hiringManager,
-      postedDate: formattedDate,
+   const initialJobs: Job[] = [
+    {
+      id: 1,
+      title: "Frontend Developer",
+      recruiter: "Jane Smith",
+      location: "Remote",
+      date: "Apr 1, 2024",
+      category: "Engineering",
+      applicants: 3,
+      status: "Active"
+    },
+    {
+      id: 2,
+      title: "UX Designer",
+      recruiter: "Robert Chen",
+      location: "Chicago, IL",
+      date: "Apr 2, 2024",
+      category: "Design",
+      applicants: 2,
+      status: "Active"
+    },
+    {
+      id: 3,
+      title: "Product Manager",
+      recruiter: "Alice Johnson",
+      location: "San Francisco, CA",
+      date: "Apr 5, 2024",
+      category: "Product",
+      applicants: 2,
+      status: "Active"
+    },
+    {
+      id: 4,
+      title: "Python DEV",
+      recruiter: "Mike Wilson",
+      location: "Austin, TX",
+      date: "Apr 7, 2024",
+      category: "Engineering",
       applicants: 0,
+      status: "Active"
+    }
+  ];
+
+
+
+  useEffect(() => {
+
+    const loadJobs = () => {
+      setIsLoading(true);
+      try {
+        if (typeof window !== 'undefined') {
+          const savedJobs = localStorage.getItem('jobListings');
+          console.log("Retrieved from localStorage:", savedJobs);
+          
+          if (savedJobs) {
+            const parsedJobs = JSON.parse(savedJobs);
+            console.log("Parsed jobs:", parsedJobs);
+            
+            // Validate job data
+            const validJobs = parsedJobs.filter((job: any) => 
+              job && job.id && job.title && job.status
+            );
+            
+            if (validJobs.length > 0) {
+              setJobs(validJobs);
+              console.log("Set valid jobs:", validJobs);
+            } else {
+              console.log("No valid jobs found, using initial jobs");
+              setJobs(initialJobs);
+              localStorage.setItem('jobListings', JSON.stringify(initialJobs));
+            }
+          } else {
+            console.log("No saved jobs, using initial jobs");
+            setJobs(initialJobs);
+            localStorage.setItem('jobListings', JSON.stringify(initialJobs));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+        setJobs(initialJobs);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('jobListings', JSON.stringify(initialJobs));
+        }
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const updatedJobs = [...jobListings, newJobListing];
-    setJobListings(updatedJobs);
-    setFilteredJobs(updatedJobs);
-    localStorage.setItem("jobListings", JSON.stringify(updatedJobs));
-    handleCloseModal();
+    loadJobs()
+  }, []);
+
+
+
+
+
+  // Data for top jobs by applicants bar chart
+  const jobsData = {
+    labels: ['Frontend Developer', 'Backend Engineer', 'Product Manager'],
+    datasets: [
+      {
+        label: 'Applicants',
+        data: [2, 2, 1],
+        backgroundColor: '#60a5fa',
+      },
+      {
+        label: 'Open',
+        data: [1, 1, 1],
+        backgroundColor: '#4ade80',
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+    },
+    cutout: '65%',
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Job Listings</h1>
-          <p className="text-gray-600">Browse and manage job postings</p>
-        </div>
-        <button
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-          onClick={handleAddJobClick}
-        >
-          <Plus size={20} /> Add New Job
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Search Bar */}
-      <div className="relative mb-6 max-w-md">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className="w-4 h-4 text-gray-400" />
-        </div>
-        <input
-          type="text"
-          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="Search jobs by title..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {/* Job Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredJobs.map((job) => (
-          <div
-            key={job.id}
-            className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
-          >
-            <h2 className="text-xl font-bold text-gray-800">{job.title}</h2>
-            <p className="text-gray-600 mb-4">{job.department}</p>
-
-            <div className="space-y-2 mb-6">
-              <p className="text-gray-700">
-                <span className="font-medium">Hiring Manager:</span>{" "}
-                {job.hiringManager}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Posted:</span> {job.postedDate}
-              </p>
-              <div className="flex items-center">
-                <svg
-                  className="w-5 h-5 text-gray-500 mr-1"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
-                </svg>
-                <span className="text-gray-700">{job.applicants} Applicants</span>
+      <main className="px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {/* Active Jobs Card */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-lg font-medium text-gray-800">Active Jobs</h2>
+              <div className="text-blue-600">
+                <FaBriefcase size={20} />
               </div>
             </div>
-
-            <button className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              View Details <ArrowRight className="ml-2 w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredJobs.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-gray-500">
-        No job listings found matching &quot;{searchQuery}&quot;
-          </p>
-        </div>
-      )}
-
-      {/* Modal */}
-      {isAddJobModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-transparent z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 mx-4">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Post New Job</h2>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
+            <div>
+              <p className="text-4xl font-bold">3</p>
+              <p className="text-sm text-gray-500 mt-1">Out of 3 total jobs</p>
             </div>
+          </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Job Title<span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g. Frontend Developer"
-                    value={newJob.title}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Department<span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="department"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g. Engineering"
-                    value={newJob.department}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Hiring Manager<span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="hiringManager"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g. John Smith"
-                    value={newJob.hiringManager}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+          {/* Total Applicants Card */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-lg font-medium text-gray-800">Total Applicants</h2>
+              <div className="text-blue-600">
+                <FaUser size={20} />
               </div>
+            </div>
+            <div>
+              <p className="text-4xl font-bold">5</p>
+              <p className="text-sm text-gray-500 mt-1">Across all job positions</p>
+            </div>
+          </div>
 
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                >
-                  Post Job
-                </button>
+          {/* Applications This Month Card */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-lg font-medium text-gray-800">Applications This Month</h2>
+              <div className="text-blue-600">
+                <FaCalendarAlt size={20} />
               </div>
-            </form>
+            </div>
+            <div>
+              <p className="text-4xl font-bold">0</p>
+              <p className="text-sm text-green-500 mt-1">+25% from last month</p>
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Top Jobs by Applicants Chart */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-800 mb-4">Top Jobs by Applicants</h2>
+            <div className="h-64">
+              <Bar data={jobsData} options={options} />
+            </div>
+          </div>
+
+          {/* Applicants by Stage Chart */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-800 mb-4">Applicants by Stage</h2>
+            <div className="h-64">
+              <Doughnut data={applicantStageData} options={doughnutOptions} />
+            </div>
+          </div>
+        </div>
+
+        {/* Recently Posted Jobs */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-medium text-gray-800">Recently Posted Jobs</h2>
+            <a href="/jobListing" className="text-blue-600 hover:underline flex items-center">
+              View All
+              <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
+              </svg>
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {jobs.slice(-3).map((job,index)=>(
+              
+                <div  key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-semibold">{job.title}</h3>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                    {job.status}
+                  </span>
+                </div>
+                <div className="space-y-2 mb-3">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FaUser className="mr-2" />
+                    <span>{job.recruiter}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FaMapMarkerAlt className="mr-2" />
+                    <span>{job.location}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FaCalendarAlt className="mr-2" />
+                    <span>Posted:{job.date}</span>
+                  </div>
+                </div>
+                <div className="font-medium text-sm">{job.category}</div>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-sm text-gray-600">{job.applicants} applicants</span>
+                  <a href="/jobDetails" className="text-blue-600 hover:underline text-sm">View Details</a>
+                </div>
+              </div>
+            </div>
+              
+            ))}
+      
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
 
-export default JobListingsDashboard;
+export default HomePage;
