@@ -1,6 +1,6 @@
 "use client";
 // pages/index.tsx
-import React, { use } from 'react';
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { 
   Chart as ChartJS, 
@@ -13,7 +13,8 @@ import {
   Legend
 } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
-import { FaSearch, FaUser, FaCalendarAlt, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
+import {  FaUser, FaCalendarAlt, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
+import Link from 'next/link';
 
 ChartJS.register(
   ArcElement, 
@@ -42,7 +43,7 @@ interface Job {
 const HomePage = () => {
 
    const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading,setIsLoading] = React.useState(true);
+  // const [isLoading,setIsLoading] = React.useState(true);
   
 
   // Data for applicants by stage donut chart
@@ -113,7 +114,7 @@ const HomePage = () => {
   useEffect(() => {
 
     const loadJobs = () => {
-      setIsLoading(true);
+      // setIsLoading(true);
       try {
         if (typeof window !== 'undefined') {
           const savedJobs = localStorage.getItem('jobListings');
@@ -124,7 +125,7 @@ const HomePage = () => {
             console.log("Parsed jobs:", parsedJobs);
             
             // Validate job data
-            const validJobs = parsedJobs.filter((job: any) => 
+            const validJobs = parsedJobs.filter((job: Job) => 
               job && job.id && job.title && job.status
             );
             
@@ -149,7 +150,7 @@ const HomePage = () => {
           localStorage.setItem('jobListings', JSON.stringify(initialJobs));
         }
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
 
@@ -313,7 +314,7 @@ const HomePage = () => {
                 <div className="font-medium text-sm">{job.category}</div>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-sm text-gray-600">{job.applicants} applicants</span>
-                  <a href="/jobDetails" className="text-blue-600 hover:underline text-sm">View Details</a>
+                  <Link href="/jobDetails" className="text-blue-600 hover:underline text-sm">View Details</Link>
                 </div>
               </div>
             </div>

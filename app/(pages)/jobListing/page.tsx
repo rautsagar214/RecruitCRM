@@ -108,7 +108,7 @@ export default function JobBoard() {
             console.log("Parsed jobs:", parsedJobs);
             
             // Validate job data
-            const validJobs = parsedJobs.filter((job: any) => 
+            const validJobs = parsedJobs.filter((job:Job) => 
               job && job.id && job.title && job.status
             );
             
