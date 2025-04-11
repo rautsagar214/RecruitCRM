@@ -40,7 +40,7 @@ const JobDetailsPage = () => {
     if (storedApplicants) {
       try {
         const parsedApplicants = JSON.parse(storedApplicants);
-        const filteredApplicants = parsedApplicants.filter((applicant: any) => applicant.job === slug);
+        const filteredApplicants = parsedApplicants.filter((applicant: Applicant) => applicant.job === slug);
         setApplicants(filteredApplicants);
       } catch (error) {
         console.error('Error parsing applicants from localStorage:', error);
@@ -137,7 +137,8 @@ const JobDetailsPage = () => {
           <div className="col-span-2 border rounded-lg p-6">
             <div className="mb-6">
               <h3 className="text-base font-semibold mb-2">Job Description</h3>
-              <p className="text-gray-700 text-sm">We're looking for a skilled Frontend Developer to join our team...</p>
+              <p className="text-gray-700 text-sm">We&apos;re looking for a skilled Frontend Developer to join our team...</p>
+
             </div>
 
             <div>
